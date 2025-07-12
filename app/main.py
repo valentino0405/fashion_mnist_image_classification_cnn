@@ -24,17 +24,13 @@ def create_model():
 try:
     # First try direct loading with compile=False
     model = tf.keras.models.load_model(model_path, compile=False)
-    st.success("✅ Model loaded successfully!")
 except Exception as e:
-    st.warning(f"Direct loading failed: {str(e)[:100]}...")
-    st.info("🔄 Creating model architecture and loading weights...")
     try:
         # Create the model architecture and load weights
         model = create_model()
         model.load_weights(model_path)
-        st.success("✅ Model weights loaded successfully!")
     except Exception as e2:
-        st.error(f"❌ All loading methods failed: {str(e2)[:100]}...")
+        st.error("❌ Failed to load the model. Please check the model file.")
         model = None
 
 # Define class labels for Fashion MNIST dataset
