@@ -6,8 +6,18 @@ import os
 
 working_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(os.path.dirname(working_dir), "model_training_notebook", "trained_fashion_mnist_model.h5")
-# Load the pre-trained model
-model = tf.keras.models.load_model(model_path)
+
+# Load the pre-trained model with error handling
+try:
+    model = tf.keras.models.load_model(model_path, compile=False)
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.info("Trying alternative loading method...")
+    try:
+        model = tf.keras.models.load_model(model_path, custom_objects=None, compile=False)
+    except Exception as e2:
+        st.error(f"Alternative loading also failed: {e2}")
+        model = None
 
 # Define class labels for Fashion MNIST dataset
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
@@ -38,13 +48,16 @@ if uploaded_image is not None:
 
     with col2:
         if st.button('Classify'):
-            # Preprocess the uploaded image
-            img_array = preprocess_image(uploaded_image)
+            if model is not None:
+                # Preprocess the uploaded image
+                img_array = preprocess_image(uploaded_image)
 
-            # Make a prediction using the pre-trained model
-            result = model.predict(img_array)
-            # st.write(str(result))
-            predicted_class = np.argmax(result)
-            prediction = class_names[predicted_class]
+                # Make a prediction using the pre-trained model
+                result = model.predict(img_array)
+                # st.write(str(result))
+                predicted_class = np.argmax(result)
+                prediction = class_names[predicted_class]
 
-            st.success(f'Prediction: {prediction}')
+                st.success(f'Prediction: {prediction}')
+            else:
+                st.error("Model failed to load. Cannot make predictions.")
